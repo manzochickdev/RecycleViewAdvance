@@ -1,5 +1,6 @@
 package com.example.manzo.demoneo;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -14,36 +15,45 @@ import java.util.ArrayList;
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
 
     ArrayList<String> list;
-    Context context;
     int selected=-1;
+    ItemClickListener itemClickListener;
 
-    public CustomAdapter(ArrayList<String> list, Context context) {
+    public CustomAdapter(ArrayList<String> list) {
         this.list = list;
-        this.context = context;
     }
 
+
+    public void setItemClickListener(ItemClickListener itemClickListener){
+        this.itemClickListener = itemClickListener;
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_recycle,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_recycle,parent,false);
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
 
         holder.itemView.setSelected(selected==position);
         holder.tvName.setText(list.get(position));
-        holder.itemClickListener = new ItemClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view, int position) {
-                Toast.makeText(context, "Click at"+position, Toast.LENGTH_SHORT).show();
-
+            public void onClick(View v) {
+                notifyItemChanged(selected);
+                //itemClickListener.onClick(v.getContext(),position);
+                itemClickListener.onClick(position);
+                selected = position;
+                notifyItemChanged(selected);
+                //Toast.makeText(v.getContext(), "Okay", Toast.LENGTH_SHORT).show();
             }
-        };
+        });
 
-    }
+        }
+
+
 
     @Override
     public int getItemCount() {
@@ -52,20 +62,11 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView tvName;
-        ItemClickListener itemClickListener;
 
         public ViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyItemChanged(selected);
-                    itemClickListener.onClick(v,getAdapterPosition());
-                    selected = getAdapterPosition();
-                    notifyItemChanged(selected);
-                }
-            });
+
         }
 
     }
